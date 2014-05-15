@@ -1,0 +1,178 @@
+html.
+	<div id="anchor"></div>
+	<script src="http://localhost:8040/socket.io/socket.io.js"></script>
+	<script src="http://fb.me/react-0.10.0.js"></script>
+	<script src="http://fb.me/JSXTransformer-0.10.0.js"></script>
+	<script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/jsx">
+		/** @jsx React.DOM */
+		var socket = io.connect();
+		var increment=1;
+
+		var getBalance = function(person, items){
+			var person_owns=0;
+			var person_paid = 0;
+			for(var i=0; i< items.length; i++){
+				for(var j =0; j< items[i].people.length; j++){
+				console.log(items[i]['item_name']);
+					if(person === items[i].people[j].person_name){
+						person_owns+=(items[i].people[j].percent_owned/100)*items[i].price;
+						person_paid+=(items[i].people[j].percent_paid/100)*items[i].price;
+					}
+			}
+			}
+			return person_owns-person_paid;
+		};
+
+		var getPeople = function(items){
+		console.log("in get people");
+			var peopleSet = {};
+			for(var i = 0; i< items.length; i++){
+				for(var j = 0; j< items[i]['people'].length; j++){
+					var person = items[i]['people'][j]['person_name'];
+					console.log(person);
+					if(peopleSet[person]=== undefined){
+						peopleSet[person] = 'here';
+					}
+				}
+			}
+			console.log(peopleSet);
+			peopleArray = []
+			for(personString in peopleSet){
+				if(peopleSet.hasOwnProperty(personString)){
+				console.log("person string is ", personString)
+					peopleArray.push(personString);
+				}
+			}
+			console.log("people array is,", peopleArray);
+			return peopleArray;
+		}
+
+
+
+		var SplitsiesModule = React.createClass({
+			getInitialState: function(){
+				return (
+				{'items':[
+					{'key': 0, 'item_name': 'peanut butter', 'price': 30, 'people':[
+							{'key': 0, 'person_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
+							{'key': 1, 'person_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
+							]}],
+							'item_name': 'orange juice', 'item_price': '100.00'
+					});
+			},
+			loadItemsFromServer: function(){
+				var that = this;
+				socket.on('message', function(data){
+				//	that.setState({});
+				});
+			},
+			componentWillMount: function(){
+				console.log(this.state);
+			},
+			handlePaymentSubmit: function(e){
+				this.state.items.push({'key': 1, 'item_name': e.target.value, 'price': e.target.value, 'people': [{}]})
+				e.preventDefault();
+			},
+			handleItemSubmit: function(e){
+				
+				increment+=1;
+				this.state.items.push({'key': increment, 'item_name': "green tea", 'price': "100"
+				, 'people':[
+							{'key': 0, 'person_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
+							{'key': 1, 'person_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
+							]});
+				this.setState({'item_name': ''});
+				this.setState({'item_price': ''});
+
+				console.log(this.state);
+				/// will go in render later<newPayment handlePaymentSubmit={this.handlePaymentSubmit}/>
+				e.preventDefault();
+			},
+			handleChange: function(name, e){
+				if(name === 'item_name'){
+					this.setState({'item_name': e.target.value});
+				}
+				else if(name === 'item_price'){
+					this.setState({'item_price': e.target.value});
+				}
+			},
+			render: function(){
+			console.log("rendering the whole thing");
+				return (<div>
+						<Items info={this.state}/>
+						<People info={this.state}/>
+						<newItem handleItemSubmit={this.handleItemSubmit} onChange={this.handleChange}
+						item_name={this.state.item_name} item_price={this.state.item_price}/>
+						</div>);
+			}
+		});
+			
+		var Items = React.createClass({
+			render: function(){
+				var items = this.props.info.items.map(function(item){
+					return (<Item item_name={item.item_name}  price={item.price}/>);
+				});
+				return (<div><p>Here's the items:</p>{items}</div>);
+			}
+		});
+
+		var Item = React.createClass({
+			render: function(){
+					return(<div>{this.props.item_name}, ${this.props.price}</div>);
+			}
+		});
+
+		var People = React.createClass({
+			render: function(){
+				var people_set = [];
+				var items = this.props.info.items;
+				var peopleSet = getPeople(items);
+				var peopleComponents = peopleSet.map(function(person){
+					var balance = getBalance(person, items);
+					return (<Person person_name={person} balance={balance}/>);
+				});
+				return (<div><p>Here's the people:</p>{peopleComponents}</div>);
+			}
+		});
+
+
+		var Person = React.createClass({
+			render: function(){
+				return (<div>{this.props.person_name}, ${this.props.balance}</div>);
+			}
+		});
+
+		var newItem = React.createClass({
+			render: function(){
+				return (<div>
+						<form onSubmit={this.props.handleItemSubmit}> I bought
+						<input type ="text"  value={this.props.item_name} 
+						onChange={this.props.onChange.bind(this, 'item_name')}>
+						for $</input>
+						<input type ="text" defaultValue="for how much" value={this.props.item_price} onChange={this.props.onChange.bind(this, 'item_price')}></input>
+						<button >new item</button>
+						</form>
+				</div>);
+			}
+		});
+
+		var newPayment = React.createClass({
+			render: function(){
+				return (<div>
+				<input type ="text" defaultValue="who I paid" ></input>
+						<input type ="text" defaultValue="how much"></input>
+						<input type ="text" defaultValue="for what"></input>
+						<button onClick={this.props.handlePaymentSubmit} >new payment </button>
+						</div>);
+			}
+		});
+
+
+
+
+		React.renderComponent(<SplitsiesModule/>, document.getElementById("anchor"));
+	</script>
+	</body>
+	</html>
