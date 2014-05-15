@@ -59,7 +59,7 @@ html.
 							{'key': 0, 'person_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
 							{'key': 1, 'person_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
 							]}],
-							'item_name': 'orange juice', 'item_price': '100.00'
+							'item_name': '', 'item_price': ''
 					});
 			},
 			loadItemsFromServer: function(){
@@ -72,13 +72,13 @@ html.
 				console.log(this.state);
 			},
 			handlePaymentSubmit: function(e){
-				this.state.items.push({'key': 1, 'item_name': e.target.value, 'price': e.target.value, 'people': [{}]})
+				this.state.items.push({'key': 1, 'item_name': e.target.value, 'price': e.target.value, 'people': [{}]});
 				e.preventDefault();
 			},
 			handleItemSubmit: function(e){
 				
 				increment+=1;
-				this.state.items.push({'key': increment, 'item_name': "green tea", 'price': "100"
+				this.state.items.push({'key': increment, 'item_name': this.state.item_name, 'price': this.state.item_price
 				, 'people':[
 							{'key': 0, 'person_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
 							{'key': 1, 'person_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
