@@ -62,6 +62,8 @@ html.
 			return peopleArray;
 		}
 
+
+
 		var SplitsiesModule = React.createClass({
 			getInitialState: function(){
 				return (
@@ -70,7 +72,7 @@ html.
 							{'key': 0, 'person_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
 							{'key': 1, 'person_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
 							]}],
-							'item_name': '', 'item_price': '', 'payment_to': '', 'payment_price': '', 'payments': []
+							'item_name': '', 'item_price': '', 'payment_to': '', 'payment_price': '', 'payments': [], 'friends': [], 'roommates': []
 					});
 			},
 			loadItemsFromServer: function(){
@@ -82,15 +84,30 @@ html.
 			componentWillMount: function(){
 				var that = this;
 				$.ajax({
-				type: "GET",
-				url: '/venmo_user',
-				dataType: 'json'
+					type: "GET",
+					url: '/venmo_user',
+					dataType: 'json'
 				}).done(function(data) {
-				console.log("got from venmo user", data);
-				//console.log(data);
-				that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
-				console.log(that.state);
+					console.log("got from venmo user", data);
+					that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
+					var formData = {
+						'user_id': that.state.user_id
+					};
+					$.ajax({
+						type: "GET",
+						data: formData,
+						url: '/venmo_user_friends',
+						dataType: 'json'
+					}).done(function(data) {
+						console.log("got from venmo userfriends", data);
+						//that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
+					});
+
+
 				});
+				
+				
+
 			
 			},
 			handlePaymentSubmit: function(e){
@@ -102,7 +119,6 @@ html.
 				e.preventDefault();
 			},
 			handleItemSubmit: function(e){
-				//verify validity of items here
 				increment+=1;
 				this.state.items.push({'key': increment, 'item_name': this.state.item_name, 'price': this.state.item_price
 				, 'people':[
@@ -111,7 +127,6 @@ html.
 							]});
 				this.setState({'item_name': ''});
 				this.setState({'item_price': ''});
-				/// will go in render later
 				e.preventDefault();
 			},
 			handleChange: function(name, e){
