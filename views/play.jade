@@ -4,6 +4,7 @@ html.
 	<script src="http://fb.me/react-0.10.0.js"></script>
 	<script src="http://fb.me/JSXTransformer-0.10.0.js"></script>
 	<script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
 	<script type="text/jsx">
 		/** @jsx React.DOM */
@@ -79,7 +80,18 @@ html.
 				});
 			},
 			componentWillMount: function(){
-				console.log(this.state);
+				var that = this;
+				$.ajax({
+				type: "GET",
+				url: '/venmo_user',
+				dataType: 'json'
+				}).done(function(data) {
+				console.log("got from venmo user", data);
+				//console.log(data);
+				that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
+				console.log(that.state);
+				});
+			
 			},
 			handlePaymentSubmit: function(e){
 				increment+=1;

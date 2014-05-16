@@ -1,0 +1,36 @@
+html.
+	<div id="anchor"></div>
+	<script src="http://localhost:8040/socket.io/socket.io.js"></script>
+	<script src="http://fb.me/react-0.10.0.js"></script>
+	<script src="http://fb.me/JSXTransformer-0.10.0.js"></script>
+	<script src="http://code.jquery.com/jquery-1.10.0.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/jsx">
+		/** @jsx React.DOM */
+		var socket = io.connect();
+		var increment=1;
+		var SigninModule = React.createClass({
+		click: function(ev) {
+			$.ajax({
+				type: "GET",
+				url: '/venmo',
+				dataType: 'json'
+			}).done(function(data) {
+				window.location = data;
+			});
+		},
+		render: function(){
+			return (<div>
+				<input class="submit"
+				type="submit"
+				onClick={this.click}
+				value="Click Here To Sign In To Venmo">
+				</input>
+			</div>);
+			}
+		});
+		React.renderComponent(<SigninModule/>, document.getElementById("anchor"));
+	</script>
+	</body>
+	</html>
