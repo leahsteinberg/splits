@@ -63,6 +63,81 @@ html.
 		}
 
 
+		var UserModule = React.createClass({
+			componentWillMount: function(){
+				this.setState({'filter_text': ''});
+			},
+			onInput: function(e){
+			console.log("in user mod ", e.target.value);
+				this.setState({'filter_text': e.target.value});
+			},
+			render: function(){
+				return(<div>{this.props.user_name}
+				<SearchBar filter_text={this.state.filter_text} onChange={this.onInput}/>
+				<SelectRoommates friends={this.props.friends} roommates={this.props.roommates} onSelect={this.props.onSelect} filter_text={this.state.filter_text}/>
+				</div>);
+			}
+		});
+
+		var SelectRoommates = React.createClass({
+			render: function(){
+						var that = this;
+
+			var filtered_people = [];
+			this.props.friends.map(function(person){
+				var lower_display_name = person['display_name'].toLowerCase();
+				var lower_filter_text = that.props.filter_text.toLowerCase();
+				if(lower_display_name.indexOf(lower_filter_text) !== -1){
+					filtered_people.push(person);
+				}
+			});
+				people = filtered_people.map(function(person){
+					if(that.props.roommates.indexOf(person['display_name'])!= -1){
+					return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect} isRoommate={true}/>);
+
+					}
+					else{
+					return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect}  isRoommate={false}/>);
+
+					}
+				});
+				return (<div>{people}</div>);	
+			}
+		});
+
+		var SearchBar = React.createClass({
+			render: function(){
+
+
+				return (
+				<form onChange={this.props.onChange} > 
+						<input type ="text"  value={this.props.filter_text} 
+						> </input>
+					</form>
+				);
+			}
+		});
+
+
+
+		var PersonSelect = React.createClass({
+			render: function(){
+							if(this.props.isRoommate){
+					var divStyle = {
+				backgroundColor: '#86E2D5'
+				}
+				}
+				else{
+				var divStyle = {
+					backgroundColor: '#C5EFF7'
+				};
+
+				}
+				console.log(this.props.display_name, "   ", this.props.isRoommate);
+				return (<div style={divStyle} onClick={this.props.onSelect.bind(this, this.props.display_name)}>{this.props.display_name}</div>);
+			}
+		});
+
 
 		var SplitsiesModule = React.createClass({
 			getInitialState: function(){
@@ -78,7 +153,6 @@ html.
 			loadItemsFromServer: function(){
 				var that = this;
 				socket.on('message', function(data){
-				//	that.setState({});
 				});
 			},
 			componentWillMount: function(){
@@ -91,24 +165,18 @@ html.
 					console.log("got from venmo user", data);
 					that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
 					var formData = {
-						'user_id': that.state.user_id
-					};
+						'user_id': that.state.user_id};
 					$.ajax({
 						type: "GET",
 						data: formData,
 						url: '/venmo_user_friends',
 						dataType: 'json'
 					}).done(function(data) {
-						console.log("got from venmo userfriends", data);
-						//that.setState({'user_name': data['data']['user']['username'], 'user_id': data['data']['user']['id']});
+						that.setState({'friends': data['friends']});
+						console.log(that.state);
+						
 					});
-
-
 				});
-				
-				
-
-			
 			},
 			handlePaymentSubmit: function(e){
 				increment+=1;
@@ -138,15 +206,29 @@ html.
 				}
 				else if(name === 'payment_to'){
 					this.setState({'payment_to': e.target.value});
-
 				}
 				else if(name === 'payment_price'){
 					this.setState({'payment_price': e.target.value});
-
 				}
+			},
+			selectPerson: function(name, e){
+				console.log("in select person, name is: ", name);
+					if(this.state.roommates.indexOf(name)!= -1){
+					var array_index = this.state.roommates.indexOf(name);
+					console.log("array index is", array_index);
+					this.state.roommates.splice(array_index, 1);
+
+					}
+					else{
+				this.state.roommates.push(name);
+				}
+				this.setState({'roommates': this.state.roommates});
+				e.preventDefault();
+
 			},
 			render: function(){
 				return (<div>
+						<UserModule friends={this.state.friends} user_name={this.state.user_name} roommates={this.state.roommates}  onSelect={this.selectPerson}/>
 						<Items info={this.state}/>
 						<People info={this.state}/>
 						<newItem handleItemSubmit={this.handleItemSubmit} onChange={this.handleChange}
