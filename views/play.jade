@@ -74,7 +74,7 @@ html.
 			render: function(){
 				return(<div>{this.props.user_name}
 				<SearchBar filter_text={this.state.filter_text} onChange={this.onInput}/>
-				<SelectRoommates friends={this.props.friends} roommates={this.props.roommates} onSelect={this.props.onSelect} filter_text={this.state.filter_text}/>
+				<SelectRoommates whole_list={this.props.friends} select_list={this.props.roommates} onSelect={this.props.onSelect} compare_text={this.state.filter_text}/>
 				</div>);
 			}
 		});
@@ -84,20 +84,20 @@ html.
 						var that = this;
 
 			var filtered_people = [];
-			this.props.friends.map(function(person){
+			this.props.whole_list.map(function(person){
 				var lower_display_name = person['display_name'].toLowerCase();
-				var lower_filter_text = that.props.filter_text.toLowerCase();
-				if(lower_display_name.indexOf(lower_filter_text) !== -1){
+				var lower_compare_text = that.props.compare_text.toLowerCase();
+				if(lower_display_name.indexOf(lower_compare_text) !== -1){
 					filtered_people.push(person);
 				}
 			});
 				people = filtered_people.map(function(person){
-					if(that.props.roommates.indexOf(person['display_name'])!= -1){
-					return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect} isRoommate={true}/>);
+					if(that.props.select_list.indexOf(person['display_name'])!= -1){
+						return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect} is_selected={true}/>);
 
 					}
 					else{
-					return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect}  isRoommate={false}/>);
+						return (<PersonSelect user_name={person['user_id']} display_name={person['display_name']} onSelect={that.props.onSelect}  is_selected={false}/>);
 
 					}
 				});
@@ -122,7 +122,7 @@ html.
 
 		var PersonSelect = React.createClass({
 			render: function(){
-							if(this.props.isRoommate){
+							if(this.props.is_selected){
 					var divStyle = {
 				backgroundColor: '#86E2D5'
 				}
@@ -133,7 +133,7 @@ html.
 				};
 
 				}
-				console.log(this.props.display_name, "   ", this.props.isRoommate);
+				console.log(this.props.display_name, "   ", this.props.is_selected);
 				return (<div style={divStyle} onClick={this.props.onSelect.bind(this, this.props.display_name)}>{this.props.display_name}</div>);
 			}
 		});
@@ -287,6 +287,9 @@ html.
 				</div>);
 			}
 		});
+
+
+
 
 		var newPayment = React.createClass({
 			render: function(){
