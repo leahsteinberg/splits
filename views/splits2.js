@@ -151,9 +151,11 @@
 
 		var getBalance = function(person, items, payments){
 			var balance=0;
+			console.log("items in get balance,", items);
 			for(var i=0; i< items.length; i++){
-				for(var j =0; j< items[i].people.length; j++){
-					if(person['id'] === items[i]['people'][j]['id']){
+				for(var j =0; j< items[i]['people'].length; j++){
+					if(person['id'] === items[i]['people'][j]['person']['id']){
+						console.log("percent owned ", items[i]['people'][j].percent_owned);
 						balance-=(items[i].people[j].percent_owned/100)*items[i].price;
 						balance+=(items[i].people[j].percent_paid/100)*items[i].price;
 					}
