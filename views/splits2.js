@@ -13,12 +13,7 @@
 	var SplitsiesModule = React.createClass({
 			getInitialState: function(){
 				return (
-				{'items':[
-					{'key': 0, 'item_name': 'peanut butter', 'price': 30, 'people':[
-							{'key': 0, 'display_name': 'Sarah', 'percent_owned': 50, 'percent_paid': 100},
-							{'key': 1, 'display_name': 'Rachel', 'percent_owned': 50, 'percent_paid':0}
-							]}],
-							'item_name': '', 'item_price': '', 'payment_to': [], 'payment_price': '', 'payments': [], 'friends': [], 'roommates': [], 'user': {}, 'search_name': ''
+				{'items':[], 'item_name': '', 'item_price': '', 'payment_to': [], 'payment_price': '', 'payments': [], 'friends': [], 'roommates': [], 'user': {}, 'search_name': ''
 					});
 			},
 			loadItemsFromServer: function(){
@@ -50,26 +45,29 @@
 					this.setState({'payment_to': []});
 					this.setState({'payment_price': ''});
 				}
-				console.log(this.state.payments);
 				e.preventDefault();
 				
 			},
 			handleItemSubmit: function(e){
-				increment+=1;
-				var owns_item = [];
-				for(var i =0; i<this.state.roommates; i++){
-					owns_item.push({'display_name': this.state.roommates[i][display_name], 'percent_owned': ((this.state.roommates.length+1)/100)*100, 'percent_paid': 0});
+				e.preventDefault();
+				var who_owns = [];
+				console.log(this);
+				console.log("rooomates", this.state.roommates);
+				for(var i =0; i<this.state.roommates.length; i++){
+					console.log("handle item submit in for loop");
+					console.log(this.state.roommates[i]);
+					who_owns.push({'person': this.state.roommates[i], 'percent_owned': (1/(this.state.roommates.length+1))*100, 'percent_paid': 0});
 				}
-				owns_item.push({'display_name': this.state.user['display_name'], 'percent_owned': ((this.state.roommates.length+1)/100)*100, percent_paid: 100})
+				who_owns.push({'person': this.state.user, 'percent_owned': (1/(this.state.roommates.length+1))*100, percent_paid: 100})
+				console.log(who_owns);
 				
-				this.state.items.push({'key': increment, 'item_name': this.state.item_name, 'price': this.state.item_price, 'people':roommates_own});
+				this.state.items.push({'item_name': this.state.item_name, 'price': this.state.item_price, 'people':who_owns});
 				this.setState({'item_name': ''});
 				this.setState({'item_price': ''});
-				e.preventDefault();
+				//e.preventDefault();
 
 			},
 			handleChange: function(name, e){
-				console.log(name, e.target.value);
 				if(name === 'item_name'){
 					this.setState({'item_name': e.target.value});
 				}
@@ -153,21 +151,17 @@
 
 		var getBalance = function(person, items, payments){
 			var balance=0;
-			var person_owns=0;
-			var person_paid = 0;
-			//for(var i=0; i< items.length; i++){
-			//	for(var j =0; j< items[i].people.length; j++){
-			//		if(person['display_name'] === items[i].people[j].person_name){
-						//balance+=(items[i].people[j].percent_owned/100)*items[i].price;
-						//balance+=(items[i].people[j].percent_paid/100)*items[i].price;
-			//		}
-			//}
-			//}
+			for(var i=0; i< items.length; i++){
+				for(var j =0; j< items[i].people.length; j++){
+					if(person['id'] === items[i]['people'][j]['id']){
+						balance-=(items[i].people[j].percent_owned/100)*items[i].price;
+						balance+=(items[i].people[j].percent_paid/100)*items[i].price;
+					}
+				}
+			}
 			var payment_balance =0;
 			for(var i =0; i<payments.length; i++){
-				console.log(payments);
 				if(person['display_name'] === payments[i].payment_to['display_name']){
-					console.log(payments[i].price);
 					balance+=parseInt(payments[i]['price']);
 				}
 				else if(person === payments[i]['payment_from']){
