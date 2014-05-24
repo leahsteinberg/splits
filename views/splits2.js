@@ -1,9 +1,10 @@
 	/** @jsx React.DOM */
 
+
+
 	var objInObjList = function(obj, list, field){
 		for(var i = 0; i< list.length; i++){
 			if(list[i][field] === obj[field]){
-				
 				return i;
 			}
 		}
@@ -18,6 +19,30 @@
 			},
 			loadItemsFromServer: function(){
 			},
+			getMoreFriends: function(nexturl){
+				console.log("next url is,",  nexturl);
+
+				nexturl = nexturl.slice(nexturl.indexOf('/v1'));
+				console.log("next url2 is,",  nexturl);
+				var that = this;
+				var formData = {
+					'nexturl': nexturl,
+					'id': that.state['user']['id']
+				};
+				$.ajax({
+					type: "GET",
+					data: formData,
+					url: '/venmo_more',
+					dataType: 'json'
+				}).done(function(data) {
+					that.state.friends.push.apply(that.state.friends, data['friends']);
+					that.setState({'friends': that.state.friends});
+					console.log(that.state);
+					if(data['nexturl']){
+						that.getMoreFriends(data['nexturl']);
+					}	
+				});
+			},
 			componentWillMount: function(){
 				var that = this;
 				$.ajax({
@@ -28,15 +53,19 @@
 					that.setState({'user': {'display_name': data['data']['user']['display_name'], 'id': data['data']['user']['id']}});
 					var formData = {
 						'id': that.state['user']['id']};
-					$.ajax({
-						type: "GET",
-						data: formData,
-						url: '/venmo_user_friends',
-						dataType: 'json'
-					}).done(function(data) {
-						that.setState({'friends': data['friends']});
+				$.ajax({
+					type: "GET",
+					data: formData,
+					url: '/venmo_user_friends',
+					dataType: 'json'
+				}).done(function(data) {
+					console.log("data is", data);
+					that.setState({'friends': data['friends']});
+					if(data['nexturl']){
+						that.getMoreFriends(data['nexturl']);
+					}
 						
-					});
+				});
 				});
 			},
 			handlePaymentSubmit: function(e){
@@ -107,7 +136,23 @@
 						<newPayment roommates={this.state.roommates} payment_to={this.state.payment_to} selectRoommate={this.selectRoommate} payment_price={this.state.payment_price} onChange={this.handleChange} handlePaymentSubmit={this.handlePaymentSubmit}/>
 						<newItem handleItemSubmit={this.handleItemSubmit} item_name={this.state.item_name} item_price={this.state.item_price} onChange={this.handleChange} />
 						<PeopleInfo items={this.state.items}  payments={this.state.payments} roommates={this.state.roommates}/>
+						<ItemsInfo items={this.state.items}/>
 						</div>);
+			}
+		});
+
+		var ItemsInfo = React.createClass({
+			render: function(){
+				var items = this.props.items.map(function(item){
+					return (<Item item_name={item['item_name']}  price={item['price']}/>);
+				});
+				return (<div><p>Heres the items:</p>{items}</div>);
+			}
+		});
+
+		var Item = React.createClass({
+			render: function(){
+					return(<div>{this.props.item_name}, ${this.props.price}</div>);
 			}
 		});
 		

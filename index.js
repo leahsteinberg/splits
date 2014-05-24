@@ -4,9 +4,7 @@ var home = require(__dirname, 'play');
 var sys = require('sys');
 var https = require('https');
 var CLIENT_ID = require('./secret_code.js').client_id;
-//var passport = require('passport');
 
-console.log("client id is, ", CLIENT_ID);
 
 router.get('/', function(req, res){
 	 res.render('signin', { title: 'Express' });
@@ -49,52 +47,69 @@ router.get('/venmo_user', function(req, res){
 	});
 });
 
+router.get('/venmo_more', function(req, res){
+	console.log("in MORE FRIENDS", req.query['nexturl']);
+			var nexturl= req.query['nexturl'];
+			
+
+			var options = {host: 'api.venmo.com',
+					path: nexturl+'&access_token='+req.session.access_token,
+					method: 'GET'}
+					console.log("next_params is in MORE    ", nexturl);
+
+			var request = https.get(options, function (http_res){
+
+					http_res.on('data', function(chunk){
+									var friends_object = {};
+			friends_object['friends'] = [];
+
+
+						console.log(JSON.parse(chunk));
+						var received_data = JSON.parse(chunk);
+						console.log("new url is: ", received_data['pagination']['next']);
+						for(var i =0; i< received_data['data'].length; i++){
+							console.log("hiii in MORE ", received_data['data'][i]['username']);
+								friends_object['friends'].push({'user_name': received_data['data'][i]['username'], 'display_name': received_data['data'][i]['display_name'], 'id': received_data['data'][i]['id']});
+						}
+									// if so, add something to the JSON that you send back.
+						if(received_data['pagination']['next']){
+							friends_object['nexturl'] = received_data['pagination']['next'];
+						}
+						res.json(friends_object);
+					});
+					request.on('error', function(e) {
+						console.log("got an error!");
+  						console.error(e);
+  					});	
+  				});
+
+			});
+
 router.get('/venmo_user_friends', function(req, res){
+// here, get the 
+
 	var user_id = req.query['id'];
 	console.log("###", user_id);
 	var options = {host: 'api.venmo.com',
 					path: '/v1/users/'+user_id+'/friends?access_token='+req.session.access_token,
 					method: 'GET'}
 	var request = https.get(options, function(http_res){
+		
 		http_res.on('data', function (chunk) {
+			
 			var friends_object = {};
 			friends_object['friends'] = [];
-			var received_data = JSON.parse(chunk);
-			console.log("new url is: ", received_data['pagination']['next']);
+			var received_data = JSON.parse(chunk);			
 			for(var i =0; i< received_data['data'].length; i++){
-				console.log("hiii", received_data['data'][i]['username']);
 				friends_object['friends'].push({'user_name': received_data['data'][i]['username'], 'display_name': received_data['data'][i]['display_name'], 'id': received_data['data'][i]['id']});
 			}
 
-
-			var next_url= received_data['pagination']['next'];
-			next_params = next_url.slice(next_url.indexOf('/v1'));
-			var options2 = {host: 'api.venmo.com',
-					path: next_params+'&access_token='+req.session.access_token,
-					method: 'GET'}
-					console.log("next_params is    ", next_params);
-			var request2 = https.get(options2, function (http_res2){
-					http_res2.on('data', function(chunk){
-						console.log(JSON.parse(chunk));
-									var received_data = JSON.parse(chunk);
-			console.log("new url is: ", received_data['pagination']['next']);
-			for(var i =0; i< received_data['data'].length; i++){
-				console.log("hiii", received_data['data'][i]['username']);
-				friends_object['friends'].push({'user_name': received_data['data'][i]['username'], 'display_name': received_data['data'][i]['display_name'], 'id': received_data['data'][i]['id']});
+			if(received_data['pagination']['next']){
+				friends_object['nexturl'] = received_data['pagination']['next'];
+				//console.log("might be sending back "friends_object);
 			}
-			
+			console.log("at end of first friends thing ", friends_object);
 			res.json(friends_object);
-
-
-					});
-			});
-
-			// make next request
-			
-			console.log(friends_object['friends']);
-
-
-    		//res.json(friends_object);
   		});
   		request.on('error', function(e) {
 			console.log("got an error!");
