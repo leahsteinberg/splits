@@ -1,0 +1,39 @@
+body {
+
+}
+
+#newItem{
+	border-style: dashed;
+	background-color: #13A3A5;
+	border-width: thin;
+	max-width: 500px;
+
+}
+
+#selectPeopleDiv{
+	background-color:#FFFFFF;
+	max-width: 500;
+}
+
+#selectPeopleSelect{
+	border:none;
+}
+#sideBar{
+	position: absolute;
+	top: 50;
+	left: 600;
+	border-style: dashed;
+	border-width: thin;
+	border-color: E50439;
+}
+
+.bold{
+	font-family: tahoma;
+	font-weight: bold;
+}
+
+div{
+
+	font-family: Helvetica;
+
+}
