@@ -72,7 +72,6 @@
 			handleItemSubmit: function(e){
 				e.preventDefault();
 				var who_owns = [];
-
 				for(var i =0; i<this.state.roommates.length; i++){
 					who_owns.push({'person': this.state.roommates[i], 'percent_owned': (1/(this.state.roommates.length+1))*100, 'percent_paid': 0});
 				}
@@ -83,6 +82,7 @@
 			},
 			handleChange: function(name, number, e){
 				e.preventDefault();
+				console.log("in h")
 				if(name === 'item_name'){
 					this.setState({'item_name': e.target.value});
 				}
@@ -90,14 +90,19 @@
 					this.setState({'item_price': e.target.value});
 				}
 				else if(name === 'payment_price'){
-					for(var i =0; i< this.state.payment_forms.length; i++){
-						if(this.state.payment_forms[i]['number'] === number){
-							this.state.payment_forms[i]['payment_price'] = e.target.value;
+						for(var i =0; i< this.state.payment_forms.length; i++){
+							if(!this.state.pay_same){
+								if(this.state.payment_forms[i]['number'] === number){
+									this.state.payment_forms[i]['payment_price'] = e.target.value;
+								}
+							}
+							else{
+								this.state.payment_forms[i]['payment_price'] = e.target.value;
+							}
 						}
-					}
 					this.setState({'payment_forms': this.state.payment_forms});
 				}
-				console.log("IN HANDLE CHANGE , item name, ", this.state.item_name, "item_price", this.state.item_price);
+				console.log("IN HANDLE CHANGE , pay same, ", this.state.pay_same, "pay forms:   ", this.state.payment_forms);
 			},
 			selectAsRoommate: function(name, e){
 				console.log("in select AS roommate: name is: ", name, "e is: ", e);
@@ -111,7 +116,10 @@
 				}
 				this.setState({'roommates': this.state.roommates});
 				e.preventDefault();
-
+			},
+			togglePaySame: function(e){
+				console.log("toggle pay same!!!");
+				this.setState({'pay_same': !this.state.pay_same});
 			},
 			selectRoommate: function(name, e){
 				for(var i = 0; i< this.state.payment_forms.length; i++){
@@ -138,7 +146,7 @@
 						<PeopleInfo items={this.state.items}  payments={this.state.payments} roommates={this.state.roommates}/>
 						<ItemsInfo items={this.state.items}/> </div>
 						<UserModule friends={this.state.friends} user={this.state.user_name} roommates={this.state.roommates}  selectAsRoommate={this.selectAsRoommate} />
-						<newPayment addPaymentPerson={this.addPaymentPerson} roommates={this.state.roommates} payment_forms={this.state.payment_forms} selectRoommate={this.selectRoommate} onChange={this.handleChange} handlePaymentSubmit={this.handlePaymentSubmit} />
+						<newPayment addPaymentPerson={this.addPaymentPerson} togglePaySame={this.togglePaySame} pay_same={this.state.pay_same} roommates={this.state.roommates} payment_forms={this.state.payment_forms} selectRoommate={this.selectRoommate} onChange={this.handleChange} handlePaymentSubmit={this.handlePaymentSubmit} />
 						<newItem handleItemSubmit={this.handleItemSubmit} item_name={this.state.item_name} item_price={this.state.item_price} onChange={this.handleChange} />
 						</div>);
 			}
@@ -235,7 +243,9 @@
 					<form onSubmit={this.props.handlePaymentSubmit}>
 					<button>new payment</button>
 					<button type="button" onClick={this.props.addPaymentPerson}>pay another person</button>
+					<input type="checkbox" value={this.props.pay_same} onClick={this.props.togglePaySame}> </input> pay everyone the same
 					</form>
+
 				</div>);
 			}
 		});
